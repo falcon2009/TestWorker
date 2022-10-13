@@ -2,8 +2,8 @@
 
 namespace TestWorker.Message
 {
-    public interface IContentFileTransferMessageProvider<TMessage> where TMessage : IContentFileTransferMessage
+    public interface IContentFileTransferMessageProvider<out TMessage> where TMessage : IContentFileTransferMessage
     {
-        IContentFileTransferMessage GetContentFileTransferMessage(IContentFileTransferResult result);
+        TMessage CreateContentFileTransferMessage(IContentFileTransferResult result);
     }
 }

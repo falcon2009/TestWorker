@@ -39,7 +39,7 @@ namespace TestWorker.ContentFileService
             return result;
         }
 
-        public abstract IContentFileTransferMessage GetContentFileTransferMessage(IContentFileTransferResult result);
+        public abstract TMessage CreateContentFileTransferMessage(IContentFileTransferResult result);
 
         private Task SendNotification(IContentFileTransferResult result)
         {
@@ -48,7 +48,7 @@ namespace TestWorker.ContentFileService
                 return Task.CompletedTask;
             }
 
-            IContentFileTransferMessage message = GetContentFileTransferMessage(result);
+            TMessage message = CreateContentFileTransferMessage(result);
 
             return serviceBus.PublishAsync(message);
         }
