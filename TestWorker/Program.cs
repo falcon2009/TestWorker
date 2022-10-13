@@ -1,6 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TestWorker.Configuration;
+using TestWorker.Configuration.Connection;
+using TestWorker.Configuration.ContentFileTransfer;
 
 namespace TestWorker
 {
@@ -16,29 +19,12 @@ namespace TestWorker
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddSingleton(RegisterConfigurationProvider<IS3Connection, S3Connection>("Tandem:S3Connection", hostContext.Configuration));
-                    services.AddSingleton(RegisterConfigurationProvider<IFtpConnection, FtpConnection>("Tandem:FtpConnection", hostContext.Configuration));
+                    services.AddSingleton(RegisterConfigurationProvider<ISftpConnection, SftpConnection>("Tandem:SftpConnection", hostContext.Configuration));
+                    services.AddSingleton(RegisterConfigurationProvider<IContentFileTransfer, ContentFileTransfer>("Tandem:FileTransfer", hostContext.Configuration));
+                    services.AddSingleton(RegisterConfigurationProvider<IPgpDecryption, PgpDecryption>("Tandem:Cryptography:Pgp:Decryption", hostContext.Configuration));
+                    services.AddSingleton(RegisterConfigurationProvider<IPgpEncryption, PgpEncryption>("Tandem:Cryptography:Pgp:Encryption", hostContext.Configuration));
                     services.AddHostedService<Worker>();
                 });
-
-        //private static ITreasuryExportProviderStorage RegisterTreasuryExportProviderStorage(IConfiguration configuration)
-        //{
-        //    InMemoryTreasuryExportProviderStorage storage = new InMemoryTreasuryExportProviderStorage();
-
-        //    TreasuryConfigurationExport[] providerArray = configuration.GetSection("Tandem:TreasuryConfiguration:Export")
-        //                                                          .Get<TreasuryConfigurationExport[]>();
-
-        //    return storage;
-        //}
-
-        //private static ITreasuryConfigurationImport RegisterTreasuryConfigurationImport(IConfiguration configuration)
-        //{
-        //    TreasuryConfigurationImport importConfiguration = new TreasuryConfigurationImport
-        //    {
-        //        PgpConfigurationPrivate = configuration.GetSection("Tandem:TreasuryConfiguration:Import:PGP").Get<PgpConfigurationPrivate>()
-        //    };
-
-        //    return importConfiguration;
-        //}
 
         private static IConfigurationProvider<TConfiguration> RegisterConfigurationProvider<TConfiguration, TImplementation>(string section, IConfiguration configuration) where TImplementation: IKey<string> where TConfiguration : class
         {

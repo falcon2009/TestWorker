@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -6,7 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="ContentFile\ContentTypeHelper.cs" />
+    <Compile Remove="ContentFileBase\ContentTypeHelper.cs" />
+    <Compile Remove="ContentFileBase\IContentFile.cs" />
     <Compile Remove="InMemoryTreasuryExportProvider.cs" />
     <Compile Remove="IPgpConfigurationPrivate.cs" />
     <Compile Remove="ITreasuryConfigurationExport.cs" />
@@ -17,9 +18,5 @@
     <PackageReference Include="AWSSDK.S3" Version="3.5.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="SSH.NET" Version="2020.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="FileTransferInstruction\" />
   </ItemGroup>
 </Project>
