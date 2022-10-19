@@ -11,7 +11,7 @@
 
         string ContentType { get; }
 
-        Stream Stream { get; }
+        MemoryStream Stream { get; }
     }
 
     public sealed class ContentFile : IContentFile
@@ -22,7 +22,7 @@
 
         public string ContentType { get; set; }
 
-        public Stream Stream { get; set; }
+        public MemoryStream Stream { get; set; }
 
         public void Dispose()
         {

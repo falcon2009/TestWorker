@@ -1,16 +1,12 @@
 ﻿namespace TestWorker.Configuration
 {
-    public interface IServiceConnectionConfiguration
+    public interface IServiceConnectionConfiguration : IRelationConfiguration
     {
-        string ConnectionName { get; }
-        string ConnectionType { get; }
         string Folder { get; }
     }
 
-    public class ServiceConnectionConfiguration: IServiceConnectionConfiguration
+    public class ServiceConnectionConfiguration: RelationConfiguration, IServiceConnectionConfiguration
     {
-        public string ConnectionName { get; set; }
-        public string ConnectionType { get; set; }
         public string Folder { get; set; }
     }
 }

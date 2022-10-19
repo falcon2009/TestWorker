@@ -10,7 +10,11 @@
 
         IProviderConfiguration Provider { get; }
 
-        IManagerConfiguration Manager { get; }
+        IServiceConnectionConfiguration Manager { get; }
+
+        IPipelineConfiguration Pipeline { get; }
+
+        IRetryPolicyConfiguration RetryPolicy { get; }
 
         bool ShouldRemoveAfterUploading { get; }
     }
@@ -25,14 +29,22 @@
 
         public ProviderConfiguration Provider { get; set; }
 
-        public ManagerConfiguration Manager { get; set; }
+        public ServiceConnectionConfiguration Manager { get; set; }
+
+        public PipelineConfiguration Pipeline { get; set; }
+
+        public RetryPolicyConfiguration RetryPolicy { get; set;  }
 
         public bool ShouldRemoveAfterUploading { get; set; }
 
-        public string Key => $"{FileType}_{Source}";
+        public string Key => $"{FileType}_{Source}_{Destination}";
+
+        IRetryPolicyConfiguration IContentFileTransfer.RetryPolicy => RetryPolicy;
 
         IProviderConfiguration IContentFileTransfer.Provider => Provider;
 
-        IManagerConfiguration IContentFileTransfer.Manager => Manager;
+        IServiceConnectionConfiguration IContentFileTransfer.Manager => Manager;
+
+        IPipelineConfiguration IContentFileTransfer.Pipeline => Pipeline;
     }
 }

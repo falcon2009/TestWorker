@@ -1,6 +1,6 @@
 ﻿namespace TestWorker
 {
-    public interface IKey<T>
+    public interface IKey<out T>
     {
         public T Key { get; }
     }

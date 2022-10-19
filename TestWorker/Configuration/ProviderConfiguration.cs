@@ -2,11 +2,11 @@
 {
     public interface IProviderConfiguration : IServiceConnectionConfiguration
     {
-        string Decryption { get; }
+        bool IsOneTypeFileOnly { get; }
     }
 
     public class ProviderConfiguration : ServiceConnectionConfiguration, IProviderConfiguration
     {
-        public string Decryption { get; set; }
+        public bool IsOneTypeFileOnly { get; set; }
     }
 }

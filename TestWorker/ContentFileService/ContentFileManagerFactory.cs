@@ -28,10 +28,10 @@ namespace TestWorker.ContentFileService
 
         public IContentFileManager GetContentFileManager(IServiceConnectionConfiguration configuration)
         {
-            return configuration.ConnectionType switch
+            return configuration.Type switch
             {
-                "SFTP" => GetFtpFileManager(configuration.ConnectionName),
-                "S3" => GetS3FileManager(configuration.ConnectionName),
+                "SFTP" => GetFtpFileManager(configuration.Name),
+                "S3" => GetS3FileManager(configuration.Name),
                 _ => throw new ArgumentException("Invalid connection type"),
             };
         }

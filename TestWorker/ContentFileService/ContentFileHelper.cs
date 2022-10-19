@@ -8,11 +8,11 @@ namespace TestWorker.ContentFileService
     {
         public static async Task<IContentFile> CreateContentFileAsync(string key, Stream stream = null)
         {
-            var name = Path.GetFileName(key);
-            var path = Path.GetDirectoryName(key)
+            string name = Path.GetFileName(key);
+            string path = Path.GetDirectoryName(key)
                               ?.Replace('\\', '/');
 
-            var contentFile = new ContentFile
+            ContentFile contentFile = new ContentFile
             {
                 ContentType = "application/octem-stream",
                 Name = name,
