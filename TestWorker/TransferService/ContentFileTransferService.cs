@@ -49,39 +49,41 @@ namespace TestWorker.TransferService
 
         public async Task<IEnumerable<IContentFileTransferResult>> TransferContentFileAllAsync()
         {
-            IPropagatorBlock<string, IContentFileTransferResult> pipeLine = CreateTransferPipelineForContentFile();
+            IPropagatorBlock<Try<string>, Try<IContentFileTransferResult>> pipeLine = CreateTransferPipelineForContentFile();
             IEnumerable<IContentFile> contentFileArray = await sourceContentFileService.GetListAsync(configuration.Provider.Folder);
 
             Func<IContentFile, bool> predicate = !configuration.Provider.IsOneTypeFileOnly ? (item) => !string.IsNullOrEmpty(item?.Name)
                                                                                            : (item) => !string.IsNullOrEmpty(item?.Name) && item.Name.Contains(configuration.FileType);
             contentFileArray = contentFileArray.Where(predicate);
-            IEnumerable<IContentFileTransferResult> result = 
+            Try<IContentFileTransferResult>[] result = 
                 await Task.WhenAll(contentFileArray.Select(contentFile => contentFile.Name)
                                                    .Select(async name => {
-                                                       await pipeLine.SendAsync(name);
+                                                       await pipeLine.SendAsync(Try.Create(()=>name));
                                                        return await pipeLine.ReceiveAsync();
                                                    }));
 
-            return result.Where(item => item != null);
+            return result.Where(item => item.IsValue).Select(item => item.Value);
         }
 
         public async Task<IContentFileTransferResult> TransferContentFileAsync(string name)
         {
-            IPropagatorBlock<string, IContentFileTransferResult> pipeLine = CreateTransferPipelineForContentFile();
-            await pipeLine.SendAsync(name);
+            IPropagatorBlock<Try<string>, Try<IContentFileTransferResult>> pipeLine = CreateTransferPipelineForContentFile();
+            await pipeLine.SendAsync(Try.Create(()=>name));
 
-            return await pipeLine.ReceiveAsync();
+            Try<IContentFileTransferResult> result = await pipeLine.ReceiveAsync();
+
+            return result.Value;
 
         }
 
-        private IPropagatorBlock<string, IContentFileTransferResult> CreateTransferPipelineForContentFile()
+        private IPropagatorBlock<Try<string>, Try<IContentFileTransferResult>> CreateTransferPipelineForContentFile()
         {
             DataflowLinkOptions options = new DataflowLinkOptions { PropagateCompletion = true };
-            TransformBlock<string, (string, byte[])> sourceBlock = CreateFetchBlock();
-            TransformBlock<(string, byte[]), (string, byte[])> decryptorBlock = CreateDecriptorBlock();
-            TransformBlock<(string, byte[]), (string, byte[])> convertBlock = CreateConverterBlock();
-            TransformBlock<(string, byte[]), (string, byte[])> encryptBlock = CreateEncryptBlock();
-            TransformBlock<(string, byte[]), IContentFileTransferResult> resultBlock = CreateUploadAndDeleteBlock();
+            TransformBlock<Try<string>, Try<(string, byte[])>> sourceBlock = CreateFetchBlock();
+            TransformBlock<Try<(string, byte[])>, Try<(string, byte[])>> decryptorBlock = CreateDecriptorBlock();
+            TransformBlock<Try<(string, byte[])>, Try<(string, byte[])>> convertBlock = CreateConverterBlock();
+            TransformBlock<Try<(string, byte[])>, Try<(string, byte[])>> encryptBlock = CreateEncryptBlock();
+            TransformBlock<Try<(string, byte[])>, Try<IContentFileTransferResult>> resultBlock = CreateUploadAndDeleteBlock();
             disposableList.Add(sourceBlock.LinkTo(decryptorBlock, options));
             disposableList.Add(decryptorBlock.LinkTo(convertBlock, options));
             disposableList.Add(convertBlock.LinkTo(encryptBlock, options));
@@ -90,63 +92,67 @@ namespace TestWorker.TransferService
             return  DataflowBlock.Encapsulate(sourceBlock, resultBlock);
         }
 
-        private TransformBlock<string, (string, byte[])> CreateFetchBlock()
+        private TransformBlock<Try<string>, Try<(string, byte[])>> CreateFetchBlock()
         {
-            TransformBlock<string, (string, byte[])> block = new TransformBlock<string, (string, byte[])>( async name => {
+            async Task<(string, byte[])> func(string name)
+            {
                 using IContentFile source = await sourceContentFileService.GetAsync(GetKey(name));
 
                 return (name, source.Stream.ToArray());
-            });
+            }
 
-
-            return block;
+            return RailwayTransform<string, (string, byte[])>(func);
         }
 
-        private TransformBlock<(string, byte[]), (string, byte[])> CreateDecriptorBlock()
+        private TransformBlock<Try<(string, byte[])>, Try<(string, byte[])>> CreateDecriptorBlock()
         {
-            TransformBlock<(string, byte[]), (string, byte[])> block = new TransformBlock<(string, byte[]), (string, byte[])>(async entry => {
+            async Task<(string, byte[])> func((string, byte[]) entry)
+            {
                 if (cryptographyDecryptor == null)
                 {
                     return entry;
                 }
 
                 return (entry.Item1, await cryptographyDecryptor.DecryptAsync(entry.Item2));
-            });
+            }
 
-            return block;
+            return RailwayTransform<(string, byte[]), (string, byte[])>(func);
         }
 
-        private TransformBlock<(string, byte[]), (string, byte[])> CreateConverterBlock()
+        private TransformBlock<Try<(string, byte[])>, Try<(string, byte[])>> CreateConverterBlock()
         {
-            TransformBlock<(string, byte[]), (string, byte[])> block = new TransformBlock<(string, byte[]), (string, byte[])>(entry => {
+            (string, byte[]) func((string, byte[]) entry)
+            {
                 if (converter == null)
                 {
                     return entry;
                 }
 
                 return (entry.Item1, converter.Convert(entry.Item2));
-            });
+            }
 
-            return block;
+            return RailwayTransform<(string, byte[]), (string, byte[])>(func);
         }
 
-        private TransformBlock<(string, byte[]), (string, byte[])> CreateEncryptBlock()
+        private TransformBlock<Try<(string, byte[])>, Try<(string, byte[])>> CreateEncryptBlock()
         {
-            TransformBlock<(string, byte[]), (string, byte[])> block = new TransformBlock<(string, byte[]), (string, byte[])>(async entry => {
+            async Task<(string, byte[])> func((string, byte[]) entry)
+            {
                 if (cryptographyEncryptor == null)
                 {
                     return entry;
                 }
 
                 return (entry.Item1, await cryptographyEncryptor.EncryptAsync(entry.Item2));
-            });
+            }
 
-            return block;
+            return RailwayTransform<(string, byte[]), (string, byte[])>(func);
         }
 
-        private TransformBlock<(string, byte[]), IContentFileTransferResult> CreateUploadAndDeleteBlock()
+        private TransformBlock<Try<(string, byte[])>, Try<IContentFileTransferResult>> CreateUploadAndDeleteBlock()
         {
-            TransformBlock<(string, byte[]), IContentFileTransferResult> block = new TransformBlock<(string, byte[]), IContentFileTransferResult>(async entry => {
+            async Task<IContentFileTransferResult> func((string, byte[]) entry)
+            {
                 using IContentFile contentFile = new ContentFile
                 {
                     ContentType = "application/octem-stream",
@@ -167,15 +173,20 @@ namespace TestWorker.TransferService
                     FileName = entry.Item1,
                     FileType = configuration.FileType
                 };
-            });
+            }
 
-            return block;
+            return RailwayTransform<(string, byte[]), IContentFileTransferResult>(func);
         }
 
         private string GetKey(string name)
         {
             return string.IsNullOrEmpty(configuration.Provider.Folder) ? name
                                                                        : $"{configuration.Provider.Folder}/{name}";
+        }
+
+        private static TransformBlock<Try<TInput>, Try<TOutput>> RailwayTransform<TInput, TOutput>(Func<TInput, Task<TOutput>> func)
+        {
+            return new TransformBlock<Try<TInput>, Try<TOutput>>(result => result.Map(func));
         }
 
         private static TransformBlock<Try<TInput>, Try<TOutput>> RailwayTransform<TInput, TOutput>(Func<TInput, TOutput> func)

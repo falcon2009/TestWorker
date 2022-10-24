@@ -50,8 +50,8 @@ namespace TestWorker.TransferService
 
             IContentFileService sourceContentFileService = await contentFileServiceFactory.GetContentFileServiceAsync(configuration.Provider);
             IContentFileService destinationContentFileService = await contentFileServiceFactory.GetContentFileServiceAsync(configuration.Provider);
-            ICryptographyDecryptor cryptographyDecryptor = cryptographyDecryptorFactory.GetCryptographyDecryptor(configuration.Pipeline?.Decrypt);
-            ICryptographyEncryptor cryptographyEncryptor = cryptographyEncryptorFactory.GetCryptographyEncryptor(configuration.Pipeline?.Encrypt);
+            ICryptographyDecryptor cryptographyDecryptor = await cryptographyDecryptorFactory.GetCryptographyDecryptorAsync(configuration.Pipeline?.Decrypt);
+            ICryptographyEncryptor cryptographyEncryptor = await cryptographyEncryptorFactory.GetCryptographyEncryptorAsync(configuration.Pipeline?.Encrypt);
             IConverter converter = convertFactory.GetConverter(configuration.Pipeline?.Convert);
 
             return new ContentFileTransferService(

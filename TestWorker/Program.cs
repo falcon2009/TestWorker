@@ -7,6 +7,7 @@ using TestWorker.Configuration.ContentFileTransfer;
 using TestWorker.ContentFileService;
 using TestWorker.Converter;
 using TestWorker.Cryptography;
+using TestWorker.MockService;
 using TestWorker.TransferService;
 
 namespace TestWorker
@@ -32,6 +33,7 @@ namespace TestWorker
                     services.AddSingleton<ICryptographyDecryptorFactory, CryptographyDecryptorFactory>();
                     services.AddSingleton<ICryptographyEncryptorFactory, CryptographyEncryptorFactory>();
                     services.AddSingleton<IConvertFactory, ConvertFactory>();
+                    services.AddSingleton<IFeatureFlagService, FeatureFlagService>();
 
                     services.AddHostedService<Worker>();
                 });

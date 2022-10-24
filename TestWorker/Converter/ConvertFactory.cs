@@ -14,6 +14,11 @@ namespace TestWorker.Converter
     {
         public IConverter GetConverter(IRelationConfiguration configuration)
         {
+            if (string.IsNullOrEmpty(configuration?.Type) || configuration.Type == "None")
+            {
+                return null;
+            }
+
             return configuration.Type switch
             {
                 "Parse" => GetParser(configuration.Name),

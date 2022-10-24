@@ -2,25 +2,25 @@
 {
     public interface IPipelineConfiguration
     {
-        IRelationConfiguration Decrypt { get; }
+        IFeatureRelationConfiguration Decrypt { get; }
 
-        IRelationConfiguration Convert { get; }
+        IFeatureRelationConfiguration Convert { get; }
 
-        IRelationConfiguration Encrypt { get; }
+        IFeatureRelationConfiguration Encrypt { get; }
     }
 
     public class PipelineConfiguration : IPipelineConfiguration
     {
-        public RelationConfiguration Decrypt { get; set; }
+        public FeatureRelationConfiguration Decrypt { get; set; }
 
-        public RelationConfiguration Convert { get; set; }
+        public FeatureRelationConfiguration Convert { get; set; }
 
-        public RelationConfiguration Encrypt { get; set; }
+        public FeatureRelationConfiguration Encrypt { get; set; }
 
-        IRelationConfiguration IPipelineConfiguration.Decrypt => Decrypt;
+        IFeatureRelationConfiguration IPipelineConfiguration.Decrypt => Decrypt;
 
-        IRelationConfiguration IPipelineConfiguration.Convert => Convert;
+        IFeatureRelationConfiguration IPipelineConfiguration.Convert => Convert;
 
-        IRelationConfiguration IPipelineConfiguration.Encrypt => Encrypt;
+        IFeatureRelationConfiguration IPipelineConfiguration.Encrypt => Encrypt;
     }
 }

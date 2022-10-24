@@ -18,7 +18,8 @@ namespace TestWorker.InMemoryContentFile
 
         public Task<IContentFile> GetAsync(string key)
         {
-            return Task.FromResult(Storage.First(item => item.Key == key).Value);
+            // return Task.FromResult(Storage.First(item => item.Key == key).Value);
+            throw new NotImplementedException("GetAsync InMemoryContentFileServiceBase is not implemented");
         }
 
         public Task<IEnumerable<IContentFile>> GetListAsync(string prefix)
